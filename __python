@@ -1,0 +1,9 @@
+#!/bin/bash
+
+dn="$(dirname "$(realpath "$0")")"
+
+# Make sure that the dependencies that this program needs to run
+# (i.e. pipfile in $dn (installation directory)) are available
+export PIPENV_PIPFILE="$dn/Pipfile"
+
+pipenv run python "$@"

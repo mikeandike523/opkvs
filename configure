@@ -1,0 +1,14 @@
+#!/bin/bash
+
+dn="$(dirname "$(realpath "$0")")"
+
+cd "$dn"
+
+chmod +x ./__pipenv
+chmod +x ./__python
+chmod +x ./opkvs
+
+./__pipenv install
+
+rm -f /usr/local/bin/opkvs
+ln -s "$dn/opkvs" /usr/local/bin/opkvs

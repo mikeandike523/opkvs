@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"[python]":{
+			"editor.formatOnSave": true,
+			"editor.formatOnPaste": true,
+			"editor.defaultFormatter": "ms-python.black-formatter"
+		}
+	}
+}
