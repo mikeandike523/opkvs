@@ -1,7 +1,7 @@
 # optkvs
 
 A comprehensive command line interface for an encrypted and cloud-synced key-value store
-Allows services like 1password to in part like more code-friendly services like HashiCorp Vault or bitwarden,
+Allows 1Password CLI to active in part like more code-friendly services such as HashiCorp Vault or bitwarden,
 i.e. programmatic handling of application credentials
 
 This tool is useful for teams with mixed personal and applicaiton credentials, such as email credentials (accessed in the type manner)
