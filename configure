@@ -6,7 +6,7 @@ cd "$dn"
 
 chmod +x ./__pipenv
 chmod +x ./__python
-chmod +x ./opkvs
+chmod +x ./op opkvs
 
 ./__pipenv install
 
