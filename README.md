@@ -1,3 +1,5 @@
+# optkvs
+
 A comprehensive command line interface for an encrypted and cloud-synced key-value store
 Allows services like 1password to in part like more code-friendly services like HashiCorp Vault or bitwarden,
 i.e. programmatic handling of application credentials
@@ -39,9 +41,17 @@ users.firstname_lastname.ssh_passphrase
 users.firstname_lastname.username
 users.firstname_lastname.password
 
+## Requirements
 
-Usage:
-(use `opkvs <SUBCOMMAND> --help` for more information about a specific subcommand)
+@todo
+
+## Installation
+
+@todo
+
+## Usage
+   
+    (use `opkvs <SUBCOMMAND> --help` for more information about a specific subcommand)
 
     `opkvs config set-vault <VAULT_NAME> [--exact]`
     Edits the config file (opkvs.json) in the current working directory to default to using a vault named <VAULT_NAME>
