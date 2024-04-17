@@ -170,46 +170,21 @@ Not vault was specified as a command line option
 @click.option("--vault", type=str, default=None)
 def set_item(key, value, file, silent=False, vault=None):
 
-    # just to handle terminals that might have some funny piping related behavior
-    # only even attempt to read stdin if no other input was provided
-    # otherwise for the calculation of the number of significant inputs, set it to None
-    # so it will not be an undeclared variable
     stdin_value = None
+    file_value = None
+
     if value is None and file is None:
         stdin_value = sys.stdin.read().decode("utf-8")
         if len(stdin_value) == 0:
             stdin_value = value
-        if file:
-            with open(file, "r", encoding="utf-8") as f:
-                file_value = f.read()
+    if file:
+        with open(file, "r", encoding="utf-8") as f:
+            file_value = f.read()
     contents = (
         value
         if value is not None
         else (file_value if file_value is not None else stdin_value)
     )
-
-    num_significant = len(
-        list(filter(lambda x: x is not None, [value, file_value, stdin_value]))
-    )
-
-    if num_significant == 0:
-        die(
-            f"""
-No input was provided (no value, no file, no piped input).
-"""
-        )
-
-    if num_significant > 1:
-        die(
-            """
-Only specify one of the following:
-
-- value
-- file (using --file)
-- piped input (using stdin)
-
-            """
-        )
 
     upsert_content_procedure(key, contents, silent, vault)
 
