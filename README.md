@@ -1,4 +1,4 @@
-# optkvs
+# opkvs
 
 A comprehensive command line interface for an encrypted and cloud-synced key-value store
 Allows 1Password CLI to active in part like more code-friendly services such as HashiCorp Vault or bitwarden,
