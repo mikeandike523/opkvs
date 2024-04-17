@@ -33,7 +33,7 @@ def get_vault_list():
 def get_vault_id(name):
     vault_list = get_vault_list()
     for vault in vault_list:
-        if vault["id"] == name:
+        if vault["name"] == name:
             return vault["id"]
 
     raise VaultNotFound(name)
