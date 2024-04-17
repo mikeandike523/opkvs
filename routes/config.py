@@ -1,3 +1,5 @@
+import sys
+
 import click
 
 from lib.config import Config
@@ -17,3 +19,12 @@ def set_vault(name):
         Config().set("vault_name", name)
     except VaultNotFound as e:
         die(str(e))
+
+
+@handler.command()
+def get_vault():
+    vault_name = Config().get("vault_name")
+    if vault_name is None:
+        sys.stdout.write("")
+        return
+    sys.stdout.write(vault_name)

@@ -5,6 +5,27 @@ import os
 from base64 import b64encode, b64decode
 
 from lib.cli import die
+from lib.config import Config
+
+
+def infer_selected_vault(explicit_vault_name=None):
+    try:
+        if explicit_vault_name:
+            return get_vault_id(explicit_vault_name)
+        else:
+            vname = Config().get("vault_name", None)
+            if vname:
+                return get_vault_id(vname)
+            return None
+
+    except VaultNotFound as e:
+        die(str(e))
+
+
+def infer_selected_vault_name(explicit_vault_name=None):
+    if explicit_vault_name:
+        return explicit_vault_name
+    return Config().get("vault_name", None)
 
 
 class VaultNotFound(Exception):
@@ -150,3 +171,32 @@ def get_secure_note_content_by_id(vault_id, note_id):
     # Process output to get the content of the notes directly
     note_content = b64decode(output.encode("utf-8")).decode("utf-8")
     return note_content
+
+
+def get_item(vault_id, key):
+    note_id = obtain_secure_note_id_by_name(vault_id, key)
+    if note_id is None:
+        return None
+    return get_secure_note_content_by_id(vault_id, note_id)
+
+
+def set_item(vault_id, key, item_content):
+    return upsert_secure_note_by_name(vault_id, key, item_content)
+
+
+def delete_item(vault_id, key):
+    delete_secure_note_by_name(vault_id, key)
+
+
+def list_items(vault_id):
+    return [item_name for item_name, _ in list_all_secure_note_names_and_ids(vault_id)]
+
+
+def clear_items(vault_id):
+    all_items = list_items(vault_id)
+    for item in all_items:
+        delete_item(vault_id, item)
+
+
+def has_item(vault_id, key):
+    return obtain_secure_note_id_by_name(vault_id, key) is not None

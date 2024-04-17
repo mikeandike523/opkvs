@@ -10,26 +10,14 @@ from lib.op import (
     get_secure_note_content_by_id,
     upsert_secure_note_by_name,
     list_all_secure_note_names_and_ids,
+    infer_selected_vault,
 )
 from lib.config import Config
 from lib.cli import die, warn
 
 from routes.vault import handler as route_vault
 from routes.config import handler as route_config
-
-
-def infer_selected_vault(explicit_vault_name=None):
-    try:
-        if explicit_vault_name:
-            return get_vault_id(explicit_vault_name)
-        else:
-            vname = Config().get("vault_name", None)
-            if vname:
-                return get_vault_id(vname)
-            return None
-
-    except VaultNotFound as e:
-        die(str(e))
+from routes.ssh import handler as route_ssh
 
 
 @click.group()
@@ -241,6 +229,7 @@ Not vault was specified as a command line option
 
 cli.add_command(route_vault, "vault")
 cli.add_command(route_config, "config")
+cli.add_command(route_ssh, "ssh")
 
 
 if __name__ == "__main__":
