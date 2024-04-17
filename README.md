@@ -23,61 +23,61 @@ for instance you may want to have a seperate 1password account for each team, in
 
 Keys in the store should generally by cli-safe identifiers, such as:
 
-    For a project:
+For a project:
 
-    development.database-password
-    development.api-key
-    staging.database-password
-    staging.api-key
-    production.database-password
-    production.api-key
+development.database-password
+development.api-key
+staging.database-password
+staging.api-key
+production.database-password
+production.api-key
 
-    For managing a vps:
+For managing a vps:
 
-    users.firstname_lastname.ssh_key
-    users.firstname_lastname.ssh_passphrase
-    users.firstname_lastname.username
-    users.firstname_lastname.password
+users.firstname_lastname.ssh_key
+users.firstname_lastname.ssh_passphrase
+users.firstname_lastname.username
+users.firstname_lastname.password
 
 
-    Usage:
-    (use `opkvs <SUBCOMMAND> --help` for more information about a specific subcommand)
+Usage:
+(use `opkvs <SUBCOMMAND> --help` for more information about a specific subcommand)
 
-        `opkvs config set-vault <VAULT_NAME> [--exact]`
-        Edits the config file (opkvs.json) in the current working directory to default to using a vault named <VAULT_NAME>
-        Creates the file it does not already exist
-        Also identifies the vault id using the 1password cli
-        If '--exact' is specified, the lookup will be case sensitive`
+    `opkvs config set-vault <VAULT_NAME> [--exact]`
+    Edits the config file (opkvs.json) in the current working directory to default to using a vault named <VAULT_NAME>
+    Creates the file it does not already exist
+    Also identifies the vault id using the 1password cli
+    If '--exact' is specified, the lookup will be case sensitive`
 
-        `opkvs list-items [--vault=<VAULT_NAME>] [--exact]`
-        Lists all (opkvs) items in the selected vault
-        If --vault is not specified, it searches for the vault in the config file
-        * If items not generated/managed by opkvs are present, they may break up opkvs entirely
-            avoid manually adding, editing, or removing data from vaults managed by optkvs
+    `opkvs list-items [--vault=<VAULT_NAME>] [--exact]`
+    Lists all (opkvs) items in the selected vault
+    If --vault is not specified, it searches for the vault in the config file
+    * If items not generated/managed by opkvs are present, they may break up opkvs entirely
+        avoid manually adding, editing, or removing data from vaults managed by optkvs
 
-        `opkvs set-item <KEY> <VALUE> [--vault=<VAULT_NAME>] [--exact]`
-        Upserts an item into the selected vault with key <KEY> and value <VALUE>
-        If --vault is not specified, it searches for the vault in the config file
-        * It is recommended to use the config file, see `opkvs config set-vault <VAULT_NAME> [--exact]`
+    `opkvs set-item <KEY> <VALUE> [--vault=<VAULT_NAME>] [--exact]`
+    Upserts an item into the selected vault with key <KEY> and value <VALUE>
+    If --vault is not specified, it searches for the vault in the config file
+    * It is recommended to use the config file, see `opkvs config set-vault <VAULT_NAME> [--exact]`
 
-        `opkvs set-item <KEY> --file <FILE> [--vault=<VAULT_NAME>] [--exact]`
-        Upserts an item into the selected vault with key <KEY> and value read from the file <FILE>
-        The file must be ascii or utf-8 encoded text
-        If --vault is not specified, it searches for the vault in the config file
-        * It is recommended to use the config file, see `opkvs config set-vault <VAULT_NAME> [--exact]`
+    `opkvs set-item <KEY> --file <FILE> [--vault=<VAULT_NAME>] [--exact]`
+    Upserts an item into the selected vault with key <KEY> and value read from the file <FILE>
+    The file must be ascii or utf-8 encoded text
+    If --vault is not specified, it searches for the vault in the config file
+    * It is recommended to use the config file, see `opkvs config set-vault <VAULT_NAME> [--exact]`
 
-        `<PIPED DATA> | opkvs set-item <KEY> [--vault=<VAULT_NAME>] [--exact]`
-        Upserts an item into the selected vault with key <KEY> and value read from stdin
-        Stdin must be valid ascii or utf-8 encoded text
-        If --vault is not specified, it searches for the vault in the config file
-        * It is recommended to use the config file, see `opkvs config set-vault <VAULT_NAME> [--exact]`
+    `<PIPED DATA> | opkvs set-item <KEY> [--vault=<VAULT_NAME>] [--exact]`
+    Upserts an item into the selected vault with key <KEY> and value read from stdin
+    Stdin must be valid ascii or utf-8 encoded text
+    If --vault is not specified, it searches for the vault in the config file
+    * It is recommended to use the config file, see `opkvs config set-vault <VAULT_NAME> [--exact]`
 
-        `opkvs get-item <KEY> [--vault=<VAULT_NAME>] [--exact]`
-        Retrieve an item from the selected vault with key <KEY>
-        If --vault is not specified, it searches for the vault in the config file
-        * It is recommended to use the config file, see `opkvs config set-vault <VAULT_NAME> [--exact]`
+    `opkvs get-item <KEY> [--vault=<VAULT_NAME>] [--exact]`
+    Retrieve an item from the selected vault with key <KEY>
+    If --vault is not specified, it searches for the vault in the config file
+    * It is recommended to use the config file, see `opkvs config set-vault <VAULT_NAME> [--exact]`
 
-        opkvs delete-item <KEY> [--vault=<VAULT_NAME>] [--exact]`
-        Deletes an item from the selected vault with key <KEY>
-        If --vault is not specified, it searches for the vault in the config file
-        * It is recommended to use the config file, see `opkvs config set-vault <VAULT_NAME> [--exact]`
+    opkvs delete-item <KEY> [--vault=<VAULT_NAME>] [--exact]`
+    Deletes an item from the selected vault with key <KEY>
+    If --vault is not specified, it searches for the vault in the config file
+    * It is recommended to use the config file, see `opkvs config set-vault <VAULT_NAME> [--exact]`
