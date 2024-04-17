@@ -17,7 +17,7 @@ from lib.cli import die, warn
 
 from routes.vault import handler as route_vault
 from routes.config import handler as route_config
-from routes.ssh import handler as route_ssh
+from routes.ssh import handler as route_ssh, ssh_compile
 
 
 @click.group()
@@ -230,6 +230,7 @@ Not vault was specified as a command line option
 cli.add_command(route_vault, "vault")
 cli.add_command(route_config, "config")
 cli.add_command(route_ssh, "ssh")
+cli.add_command(ssh_compile)
 
 
 if __name__ == "__main__":

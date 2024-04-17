@@ -4,6 +4,9 @@ A group of commands that leverage the rest of the functionality of opkvs to mana
 
 import re
 import sys
+import os
+import shutil
+import subprocess
 
 import click
 
@@ -19,9 +22,11 @@ from lib.op import (
     has_item,
     delete_item,
     get_vault_list,
+    get_vault_id,
+    VaultNotFound,
 )
 from lib.cli import die
-from lib.fs import file_get_text_contents
+from lib.fs import file_get_text_contents, file_put_text_contents
 
 
 def check_item_name(item_name):
@@ -228,7 +233,85 @@ def get_user_id_rsa(ctx, username):
     sys.stdout.write(get_item(vault_id, item_key))
 
 
-@handler.command()
+@click.command()
 @click.argument("vaults", nargs=-1, type=str)
-def compile_vaults(vaults):
-    pass
+def ssh_compile(vaults):
+
+    try:
+
+        home_dir = os.path.expanduser("~")
+
+        if not os.path.exists(os.path.join(home_dir, ".ssh")):
+            os.mkdir(os.path.join(home_dir, ".ssh"))
+
+        if not os.path.exists(os.path.join(home_dir, ".ssh", ".opkvs", "identities")):
+            os.makedirs(
+                os.path.join(home_dir, ".ssh", ".opkvs", "identities"), exist_ok=True
+            )
+
+        entries = []
+
+        for vault in vaults:
+
+            vault_id = get_vault_id(vault)
+
+            vault_alias = get_item(vault_id, "alias")
+            vault_host = get_item(vault_id, "host")
+            vault_port = int(get_item(vault_id, "port"))
+
+            vault_user_identities_path = os.path.join(
+                home_dir, ".ssh", ".opkvs", "identities", vault
+            )
+
+            if os.path.exists(vault_user_identities_path):
+                shutil.rmtree(vault_user_identities_path)
+
+            os.mkdir(vault_user_identities_path)
+
+            users = get_users_from_item_list(list_items(vault))
+
+            for user in users:
+                id_rsa = get_item(vault, f"users.{user}.id_rsa")
+                os.mkdir(os.path.join(vault_user_identities_path, user))
+                file_put_text_contents(
+                    os.path.join(vault_user_identities_path, user, "id_rsa"), id_rsa
+                )
+                if os.name != "nt":
+
+                    subprocess.check_output(
+                        [
+                            "sudo",
+                            "chmod",
+                            "600",
+                            os.path.join(vault_user_identities_path, user, "id_rsa"),
+                        ]
+                    )
+
+                full_alias = f"{user}@{vault_alias}{'' if vault_port == 22 else ':' + str(vault_port)}"
+                entry = {}
+
+                entry["Host"] = full_alias
+                entry["HostName"] = vault_host
+                entry["User"] = user
+                entry["IdentityFile"] = os.path.join(
+                    vault_user_identities_path, user, "id_rsa"
+                )
+                entry["Port"] = vault_port
+
+                entries.append(entry)
+
+        def format_entry(entry):
+            return f"""
+Host "{entry['Host']}"
+  HostName "{entry['HostName']}"
+  User "{entry['User']}"
+  IdentityFile "{entry['IdentityFile']}"
+  Port "{entry['Port']}"
+""".strip()
+
+        text = "\n\n".join([format_entry(entry) for entry in entries])
+
+        print(text)
+
+    except VaultNotFound as e:
+        die(str(e))
