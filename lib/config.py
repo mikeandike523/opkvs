@@ -22,6 +22,7 @@ class Config:
 
     def set(self, key, value):
         self.data[key] = value
+        self.save()
         return self
 
     def get(self, key, default=None):

@@ -16,4 +16,4 @@ def set_vault(name):
     try:
         Config().set("vault_name", name)
     except VaultNotFound as e:
-        die(e.get_message())
+        die(str(e))
