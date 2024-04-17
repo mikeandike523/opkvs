@@ -27,19 +27,19 @@ Keys in the store should generally by cli-safe identifiers, such as:
 
 For a project:
 
-development.database-password
-development.api-key
-staging.database-password
-staging.api-key
-production.database-password
-production.api-key
+ - `development.database-password`
+ - `development.api-key`
+ - `staging.database-password`
+ - `staging.api-key`
+ - `production.database-password`
+ - `production.api-key`
+
 
 For managing a vps:
 
-users.firstname_lastname.ssh_key
-users.firstname_lastname.ssh_passphrase
-users.firstname_lastname.username
-users.firstname_lastname.password
+ - `users.<username>.ssh_key`
+ - `users.<username>.ssh_passphrase`
+ - `users.<username>.password`
 
 ## Requirements
 
