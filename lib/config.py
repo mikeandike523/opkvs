@@ -20,11 +20,10 @@ class Config:
         with open(self.path, "r", encoding="utf-8") as f:
             self.data = json.load(f)
 
-    def set(self, key, value, save=True):
+    def set(self, key, value):
         self.data[key] = value
-        if save:
-            self.save()
         return self
 
     def get(self, key, default=None):
+        self.load()
         return self.data.get(key, default)

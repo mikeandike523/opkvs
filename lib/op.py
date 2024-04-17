@@ -2,6 +2,7 @@ import subprocess
 import json
 import tempfile
 import os
+from base64 import b64encode, b64decode
 
 from lib.cli import die
 
@@ -66,10 +67,20 @@ stderr:
 
 def list_all_secure_note_names_and_ids(vault_id):
     output = run_op_command(
-        ["item", "list", "--vault", vault_id, "--categories", "SecureNote"]
-    )
+        [
+            "item",
+            "list",
+            "--vault",
+            vault_id,
+            "--categories",
+            "SecureNote",
+            "--format=json",
+        ]
+    ).strip()
+    if not output:
+        return []
     notes = json.loads(output)
-    return [(note["overview"]["title"], note["id"]) for note in notes]
+    return [(note["title"], note["id"]) for note in notes]
 
 
 def obtain_secure_note_id_by_name(vault_id, note_name):
@@ -81,32 +92,21 @@ def obtain_secure_note_id_by_name(vault_id, note_name):
 
 
 def create_new_secure_note_with_name_and_content(vault_id, note_name, note_content):
-    # Create a temporary file
-    with tempfile.NamedTemporaryFile(delete=False, mode="w+") as tmp:
-        # Write the content to the temporary file
-        tmp.write(note_content)
-        tmp_path = tmp.name  # Get the path of the temporary file
 
     # Use the op command to create a secure note with content from the temporary file
-    try:
-        output = run_op_command(
-            [
-                "item",
-                "create",
-                "--title",
-                note_name,
-                "--category",
-                "SecureNote",
-                "--vault",
-                vault_id,
-                "--notes",
-                f"file://{tmp_path}",
-            ]
-        )
-        return json.loads(output)
-    finally:
-        # Ensure the temporary file is deleted after the command has run
-        os.remove(tmp_path)
+    run_op_command(
+        [
+            "item",
+            "create",
+            f'value="{b64encode(note_content.encode("utf-8")).decode("utf-8")}"',
+            "--category",
+            "Secure Note",
+            "--title",
+            note_name,
+            "--vault",
+            vault_id,
+        ]
+    )
 
 
 def update_secure_note_by_name(vault_id, note_name, note_content):
@@ -114,20 +114,16 @@ def update_secure_note_by_name(vault_id, note_name, note_content):
     if note_id is None:
         raise NoteNotFound(f"Secure note with name '{note_name}' not found.")
 
-    # Create a temporary file to hold the note content
-    with tempfile.NamedTemporaryFile(delete=False, mode="w+") as tmp:
-        tmp.write(note_content)
-        tmp_path = tmp.name  # Store temporary file path
-
-    # Update the note using the temporary file
-    try:
-        output = run_op_command(
-            ["item", "edit", note_id, "--notes", f"file://{tmp_path}"]
-        )
-        return json.loads(output)
-    finally:
-        # Delete the temporary file to ensure no data is left behind
-        os.remove(tmp_path)
+    run_op_command(
+        [
+            "item",
+            "edit",
+            note_id,
+            f'value="{b64encode(note_content.encode("utf-8")).decode("utf-8")}"',
+            "--vault",
+            vault_id,
+        ]
+    )
 
 
 def upsert_secure_note_by_name(vault_id, note_name, note_content):
@@ -155,12 +151,9 @@ def get_secure_note_content_by_id(vault_id, note_id):
 
     # Command to retrieve only the notes content from the secure note
     output = run_op_command(
-        ["item", "get", note_id, "--vault", vault_id, "--fields", "notes"]
-    )
+        ["item", "get", note_id, "--vault", vault_id, "--fields", "value"]
+    ).strip()[1:-1]
 
     # Process output to get the content of the notes directly
-    note_content = json.loads(output)
-    if "notes" in note_content:
-        return note_content["notes"]
-    else:
-        raise NoteNotFound("Notes content not found in the secure note.")
+    note_content = b64decode(output.encode("utf-8")).decode("utf-8")
+    return note_content
