@@ -18,21 +18,18 @@ from routes.vault import handler as route_vault
 from routes.config import handler as route_config
 
 
-def infer_selected_vault(explicit_vault_name=None, exact=False):
+def infer_selected_vault(explicit_vault_name=None):
     try:
         if explicit_vault_name:
-            return get_vault_id(explicit_vault_name, exact)
+            return get_vault_id(explicit_vault_name)
         else:
-            vid = Config().get("vault_id", None)
             vname = Config().get("vault_name", None)
-            if vid:
-                return vid
             if vname:
-                return get_vault_id(vname, exact)
+                return get_vault_id(vname)
             return None
 
     except VaultNotFound as e:
-        die(e.get_message())
+        die(str(e))
 
 
 @click.group()
@@ -129,9 +126,8 @@ def cli():
 @click.argument("key", type=str)
 @click.option("-s", "--silent", is_flag=True, default=False)
 @click.option("--vault", type=str, default=None)
-@click.option("--exact", is_flag=True, default=False)
-def get_item(key, silent=False, vault=None, exact=False):
-    vault_id = infer_selected_vault(vault, exact)
+def get_item(key, silent=False, vault=None):
+    vault_id = infer_selected_vault(vault)
     if vault_id is None:
         die(
             """
@@ -148,8 +144,8 @@ Not vault was specified as a command line option
     sys.stdout.write(contents)
 
 
-def upsert_content_procedure(key, value, silent=False, vault=None, exact=False):
-    vault_id = infer_selected_vault(vault, exact)
+def upsert_content_procedure(key, value, silent=False, vault=None):
+    vault_id = infer_selected_vault(vault)
     if vault_id is None:
         die(
             """
@@ -173,8 +169,7 @@ Not vault was specified as a command line option
 @click.option("--file", type=click.Path(exists=True), required=False, default=None)
 @click.option("-s", "--silent", is_flag=True, default=False)
 @click.option("--vault", type=str, default=None)
-@click.option("--exact", is_flag=True, default=False)
-def set_item(key, value, file, silent=False, vault=None, exact=False):
+def set_item(key, value, file, silent=False, vault=None):
 
     # just to handle terminals that might have some funny piping related behavior
     # only even attempt to read stdin if no other input was provided
@@ -217,7 +212,7 @@ Only specify one of the following:
             """
         )
 
-    upsert_content_procedure(key, contents, silent, vault, exact)
+    upsert_content_procedure(key, contents, silent, vault)
 
 
 @cli.command()
@@ -225,15 +220,13 @@ Only specify one of the following:
 @click.option("-y", "--yes", is_flag=True, default=False)
 @click.option("-s", "--silent", is_flag=True, default=False)
 @click.option("--vault", type=str, default=None)
-@click.option("--exact", is_flag=True, default=False)
 def delete_item(
     key,
     yes=False,
     silent=False,
     vault=None,
-    exact=False,
 ):
-    vault_id = infer_selected_vault(vault, exact)
+    vault_id = infer_selected_vault(vault)
     if vault_id is None:
         die(
             """
@@ -256,9 +249,8 @@ Not vault was specified as a command line option
 
 @cli.command()
 @click.option("--vault", type=str, default=None)
-@click.option("--exact", is_flag=True, default=False)
-def list_items(vault=None, exact=False):
-    vault_id = infer_selected_vault(vault, exact)
+def list_items(vault=None):
+    vault_id = infer_selected_vault(vault)
     if vault_id is None:
         die(
             """

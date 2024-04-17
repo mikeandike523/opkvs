@@ -8,16 +8,13 @@ from lib.cli import die
 
 
 class VaultNotFound(Exception):
-    def __init__(self, name, exact):
-        self.name = name
-        self.exact = exact
-
-    def get_message(self):
-        qualification = "(case insensitive)" if not self.exact else ""
-        return f"""
-No vault named '{self.name}' {qualification}
+    def __init__(self, name):
+        super().__init__(
+            f"""
+No vault named '{name}'
 Try `opkvs vault list` to see a list of available vaults
 """.strip()
+        )
 
 
 class NoteNotFound(Exception):
@@ -33,17 +30,13 @@ def get_vault_list():
     return as_list
 
 
-def get_vault_id(name, exact):
+def get_vault_id(name):
     vault_list = get_vault_list()
     for vault in vault_list:
-        if exact:
-            if vault["id"] == name:
-                return vault["id"]
-        else:
-            if vault["name"].lower() == name.lower():
-                return vault["id"]
+        if vault["id"] == name:
+            return vault["id"]
 
-    raise VaultNotFound(name, exact)
+    raise VaultNotFound(name)
 
 
 def run_op_command(args):

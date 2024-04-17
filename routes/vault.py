@@ -35,9 +35,8 @@ def list(format):
 
 @handler.command()
 @click.argument("name", required=True, type=str)
-@click.option("--exact", default=False, is_flag=True)
-def get_id(name, exact):
+def get_id(name):
     try:
-        print(get_vault_id(name, exact))
+        print(get_vault_id(name))
     except VaultNotFound as e:
         die(e.get_message())
