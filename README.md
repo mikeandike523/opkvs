@@ -50,43 +50,44 @@ For managing a vps:
 @todo
 
 ## Usage
+
+### Main Subsystem
    
-    (use `opkvs <SUBCOMMAND> --help` for more information about a specific subcommand)
+(use `opkvs <SUBCOMMAND> --help` for more information about a specific subcommand)
 
-    `opkvs config set-vault <VAULT_NAME>`
-    Edits the config file (opkvs.json) in the current working directory to default to using a vault named <VAULT_NAME>
-    Creates the file it does not already exist
-    Also identifies the vault id using the 1password cli
+`opkvs config set-vault <VAULT_NAME>`
+Edits the config file (opkvs.json) in the current working directory to default to using a vault named <VAULT_NAME>
+Creates the file it does not already exist
+Also identifies the vault id using the 1password cli
 
-    `opkvs list-items [--vault=<VAULT_NAME>]`
-    Lists all (opkvs) items in the selected vault
-    If --vault is not specified, it searches for the vault in the config file
-    * If items not generated/managed by opkvs are present, they may break up opkvs entirely
-        avoid manually adding, editing, or removing data from vaults managed by optkvs
+`opkvs list-items [--vault=<VAULT_NAME>]`
+Lists all (opkvs) items in the selected vault
+If --vault is not specified, it searches for the vault in the config file
+** If items not generated/managed by opkvs are present, they may break up opkvs entirely
+    avoid manually adding, editing, or removing data from vaults managed by optkvs **
 
-    `opkvs set-item <KEY> <VALUE> [--vault=<VAULT_NAME>]`
-    Upserts an item into the selected vault with key <KEY> and value <VALUE>
-    If --vault is not specified, it searches for the vault in the config file
-    * It is recommended to use the config file, see `opkvs config set-vault <VAULT_NAME>`
+`opkvs set-item <KEY> <VALUE> [--vault=<VAULT_NAME>]`
+Upserts an item into the selected vault with key <KEY> and value <VALUE>
+If --vault is not specified, it searches for the vault in the config file
 
-    `opkvs set-item <KEY> --file <FILE> [--vault=<VAULT_NAME>]`
-    Upserts an item into the selected vault with key <KEY> and value read from the file <FILE>
-    The file must be ascii or utf-8 encoded text
-    If --vault is not specified, it searches for the vault in the config file
-    * It is recommended to use the config file, see `opkvs config set-vault <VAULT_NAME>`
+`opkvs set-item <KEY> --file <FILE> [--vault=<VAULT_NAME>]`
+Upserts an item into the selected vault with key <KEY> and value read from the file <FILE>
+The file must be ascii or utf-8 encoded text
+If --vault is not specified, it searches for the vault in the config file
 
-    `<PIPED DATA> | opkvs set-item <KEY> [--vault=<VAULT_NAME>]`
-    Upserts an item into the selected vault with key <KEY> and value read from stdin
-    Stdin must be valid ascii or utf-8 encoded text
-    If --vault is not specified, it searches for the vault in the config file
-    * It is recommended to use the config file, see `opkvs config set-vault <VAULT_NAME>`
+`<PIPED DATA> | opkvs set-item <KEY> [--vault=<VAULT_NAME>]`
+Upserts an item into the selected vault with key <KEY> and value read from stdin
+Stdin must be valid ascii or utf-8 encoded text
+If --vault is not specified, it searches for the vault in the config file
 
-    `opkvs get-item <KEY> [--vault=<VAULT_NAME>]`
-    Retrieve an item from the selected vault with key <KEY>
-    If --vault is not specified, it searches for the vault in the config file
-    * It is recommended to use the config file, see `opkvs config set-vault <VAULT_NAME>`
+`opkvs get-item <KEY> [--vault=<VAULT_NAME>]`
+Retrieve an item from the selected vault with key <KEY>
+If --vault is not specified, it searches for the vault in the config file
 
-    opkvs delete-item <KEY> [--vault=<VAULT_NAME>]`
-    Deletes an item from the selected vault with key <KEY>
-    If --vault is not specified, it searches for the vault in the config file
-    * It is recommended to use the config file, see `opkvs config set-vault <VAULT_NAME>`
+opkvs delete-item <KEY> [--vault=<VAULT_NAME>]`
+Deletes an item from the selected vault with key <KEY>
+If --vault is not specified, it searches for the vault in the config file
+
+### SSH Login Credential Management Subsystem
+
+@todo

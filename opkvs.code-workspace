@@ -9,6 +9,10 @@
 			"editor.formatOnSave": true,
 			"editor.formatOnPaste": true,
 			"editor.defaultFormatter": "ms-python.black-formatter"
-		}
+		},
+		"flake8.args": [
+			"--max-line-length",
+			"88"
+		]
 	}
 }

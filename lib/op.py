@@ -8,7 +8,7 @@ from lib.cli import die
 from lib.config import Config
 
 
-def infer_selected_vault(explicit_vault_name=None):
+def infer_selected_vault(explicit_vault_name=None, die_on_none=True):
     try:
         if explicit_vault_name:
             return get_vault_id(explicit_vault_name)
@@ -16,6 +16,15 @@ def infer_selected_vault(explicit_vault_name=None):
             vname = Config().get("vault_name", None)
             if vname:
                 return get_vault_id(vname)
+            if die_on_none:
+                die(
+                    """
+Cannot infer selected vault for the project in the current working directory:
+No config file (opkvs.json) in the current working directory
+or field 'vault_id' and 'vault_name' are not set.
+Not vault was specified as a command line option (--vault=<VAULT NAME>)
+             """
+                )
             return None
 
     except VaultNotFound as e:

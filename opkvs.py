@@ -23,88 +23,26 @@ from routes.ssh import handler as route_ssh, ssh_compile
 @click.group()
 def cli():
     """
-    A comprehensive command line interface for an encrypted and cloud-synced key-value store
-    Allows services like 1password to in part like more code-friendly services like HashiCorp Vault or bitwarden,
+    A comprehensive command line interface for an encrypted
+    and cloud-synced key-value store
+
+    Allows services like 1password to in part like more code-friendly services
+    like HashiCorp Vault or bitwarden,
     i.e. programmatic handling of application credentials
 
-    This tool is useful for teams with mixed personal and applicaiton credentials, such as email credentials (accessed in the type manner)
-    and api keys (command line automation)
+    This tool is useful for teams with mixed typical/personal
+    and programmatic/applicaiton credentials,
+    such as email (typical use) credentials and api keys (programatic use)
 
-    A company owner or team lead should dedicate individual vaults to each key value store, which will typically be one-per-project,
-    and then keep personal credentials (such as email passwords) in a separate vault (e.g. "Employee Email Logins")
+    Usage:
 
+        opkvs [command] [options] [arguments]
 
-    For instance, the following may be the list of the vaults in a 1password business account
+        Get help with a particular command
+        opkvs [command] --help
 
-    1. Employee Email Logins (typical use)
-    2. Employee Timesheet Logins (typical use)
-    3. production_vps_credentials (opkvs keystore)
-    4. myapp1 (opkvs keystore) (contains api keys and database credentials)
-    5. myapp2 (opkvs keystore) (contains api keys and database credentials)
-    6. mymobileapp1 (opkvs keystore) (contains api keys and database credentials)
-
-    How you stay organized is up to you,
-    for instance you may want to have a seperate 1password account for each team, instead of one for the entire organzation
-
-    Keys in the store should generally by cli-safe identifiers, such as:
-
-        For a project:
-
-        development.database-password
-        development.api-key
-        staging.database-password
-        staging.api-key
-        production.database-password
-        production.api-key
-
-        For managing a vps:
-
-        users.firstname_lastname.ssh_key
-        users.firstname_lastname.ssh_passphrase
-        users.firstname_lastname.username
-        users.firstname_lastname.password
-
-
-        Usage:
-        (use `opkvs <SUBCOMMAND> --help` for more information about a specific subcommand)
-
-            `opkvs config set-vault <VAULT_NAME>`
-            Edits the config file (opkvs.json) in the current working directory to default to using a vault named <VAULT_NAME>
-            Creates the file it does not already exist
-            Also identifies the vault id using the 1password cli
-
-            `opkvs list-items [--vault=<VAULT_NAME>]`
-            Lists all (opkvs) items in the selected vault
-            If --vault is not specified, it searches for the vault in the config file
-            * If items not generated/managed by opkvs are present, they may break up opkvs entirely
-              avoid manually adding, editing, or removing data from vaults managed by optkvs
-
-            `opkvs set-item <KEY> <VALUE> [--vault=<VAULT_NAME>]`
-            Upserts an item into the selected vault with key <KEY> and value <VALUE>
-            If --vault is not specified, it searches for the vault in the config file
-            * It is recommended to use the config file, see `opkvs config set-vault <VAULT_NAME>`
-
-            `opkvs set-item <KEY> --file <FILE> [--vault=<VAULT_NAME>]`
-            Upserts an item into the selected vault with key <KEY> and value read from the file <FILE>
-            The file must be ascii or utf-8 encoded text
-            If --vault is not specified, it searches for the vault in the config file
-            * It is recommended to use the config file, see `opkvs config set-vault <VAULT_NAME>`
-
-            `<PIPED DATA> | opkvs set-item <KEY> [--vault=<VAULT_NAME>]`
-            Upserts an item into the selected vault with key <KEY> and value read from stdin
-            Stdin must be valid ascii or utf-8 encoded text
-            If --vault is not specified, it searches for the vault in the config file
-            * It is recommended to use the config file, see `opkvs config set-vault <VAULT_NAME>`
-
-            `opkvs get-item <KEY> [--vault=<VAULT_NAME>]`
-            Retrieve an item from the selected vault with key <KEY>
-            If --vault is not specified, it searches for the vault in the config file
-            * It is recommended to use the config file, see `opkvs config set-vault <VAULT_NAME>`
-
-            opkvs delete-item <KEY> [--vault=<VAULT_NAME>]`
-            Deletes an item from the selected vault with key <KEY>
-            If --vault is not specified, it searches for the vault in the config file
-            * It is recommended to use the config file, see `opkvs config set-vault <VAULT_NAME>`
+    See https://github.com/mikeandike523/opkvs/blob/main/README.md
+    for detailed usage information.
 
     """
 
@@ -115,14 +53,6 @@ def cli():
 @click.option("--vault", type=str, default=None)
 def get_item(key, silent=False, vault=None):
     vault_id = infer_selected_vault(vault)
-    if vault_id is None:
-        die(
-            """
-Cannot infer selected vault for the project in the current working directory:         
-No config file (opkvs.json) in the current working directory or field 'vault_id' and 'vault_name' are not set.
-Not vault was specified as a command line option
-"""
-        )
     note_id = obtain_secure_note_id_by_name(vault_id, key)
     if not note_id:
         warn(f"No item with key '{key}' found in vault '{vault_id}'", silent)
@@ -133,15 +63,6 @@ Not vault was specified as a command line option
 
 def upsert_content_procedure(key, value, silent=False, vault=None):
     vault_id = infer_selected_vault(vault)
-    if vault_id is None:
-        die(
-            """
-Cannot infer selected vault for the project in the current working directory:
-            
-No config file (opkvs.json) in the current working directory or field 'vault_id' and 'vault_name' are not set.
-Not vault was specified as a command line option
-"""
-        )
     is_creating_new = upsert_secure_note_by_name(vault_id, key, value)
     if not silent:
         if is_creating_new:
@@ -189,15 +110,6 @@ def delete_item(
     vault=None,
 ):
     vault_id = infer_selected_vault(vault)
-    if vault_id is None:
-        die(
-            """
-Cannot infer selected vault for the project in the current working directory:
-            
-No config file (opkvs.json) in the current working directory or field 'vault_id' and 'vault_name' are not set.
-Not vault was specified as a command line option
-"""
-        )
     note_id = obtain_secure_note_id_by_name(vault_id, key)
     if not note_id:
         warn(f"No item with key '{key}' found in vault '{vault_id}'", silent)
@@ -213,15 +125,6 @@ Not vault was specified as a command line option
 @click.option("--vault", type=str, default=None)
 def list_items(vault=None):
     vault_id = infer_selected_vault(vault)
-    if vault_id is None:
-        die(
-            """
-Cannot infer selected vault for the project in the current working directory:
-            
-No config file (opkvs.json) in the current working directory or field 'vault_id' and 'vault_name' are not set.
-Not vault was specified as a command line option
-"""
-        )
     names_and_ids = list_all_secure_note_names_and_ids(vault_id)
     for name, _ in names_and_ids:
         print(name)
