@@ -3,6 +3,5 @@
 dn="$(dirname "$(realpath "$0")")"
 
 export PIPENV_PIPFILE="$dn/Pipfile"
-export PIPENV_VERBOSITY=-1
 
-python3 -m     pipenv run python "$@"
+./__pipenv run python "$@"
