@@ -4,4 +4,4 @@ dn="$(dirname "$(realpath "$0")")"
 
 export PIPENV_PIPFILE="$dn/Pipfile"
 
-./__pipenv run python "$@"
+"$dn/__pipenv" run python "$@"
