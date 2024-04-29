@@ -6,6 +6,6 @@ export PIPENV_PIPFILE="$dn/Pipfile"
 
 source "$dn/pyenv/bin/activate"
 
-python -m pipenv "$@"
+python3.12 -m pipenv "$@"
 
 deactivate

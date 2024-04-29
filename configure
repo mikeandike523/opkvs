@@ -4,11 +4,11 @@ dn="$(dirname "$(realpath "$0")")"
 
 cd "$dn"
 
-python3 -m venv pyenv
+python3.12 -m venv pyenv
 
 source pyenv/bin/activate
 
-python3 -m pip install pipenv
+python3.12 -m pip install pipenv
 
 deactivate
 
