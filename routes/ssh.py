@@ -262,9 +262,7 @@ def set_user_authorized_keys(ctx, username, file):
 @click.pass_context
 @click.argument("username", type=str)
 @click.option("--file", type=str, required=False, default=None )
-# we use singular "key" here but technically the input contents may contin more than one key
-# although there is not particular need for it
-def add_user_authorized_key(ctx, username, file):
+def add_user_authorized_keys(ctx, username, file):
     vault_id = ctx.obj["vault_id"]
     vault_name = ctx.obj["vault_name"]
     if not has_user(vault_id, username):
