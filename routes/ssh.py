@@ -231,7 +231,7 @@ def get_user_id_rsa(ctx, username):
 
 def process_authorized_keys_text(contents):
     contents=contents.replace("\r\n","\n")
-    contents=contents.trim("")
+    contents=contents.strip("")
     contents=re.sub(r"\n+","\n",contents)
     return contents
 
