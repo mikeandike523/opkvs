@@ -1,7 +1,0 @@
-#!/bin/bash
-
-dn="$(dirname "$(realpath "$0")")"
-
-cd "$dn"
-
-./__pipenv install
