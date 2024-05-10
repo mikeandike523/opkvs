@@ -4,19 +4,17 @@ dn="$(dirname "$(realpath "$0")")"
 
 cd "$dn"
 
-python3.12 -m venv pyenv
+python -m venv pyenv
 
 source pyenv/bin/activate
 
-python3.12 -m pip install pipenv
+python -m pip install pipenv
 
 deactivate
 
 sudo chmod +x ./__pipenv
 sudo chmod +x ./__python
 sudo chmod +x ./opkvs
+sudo chmod +x ./update
 
 ./__pipenv install
-
-sudo rm -f /usr/local/bin/opkvs
-sudo ln -s "$dn/opkvs" /usr/local/bin/opkvs
