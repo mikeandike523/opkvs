@@ -11,17 +11,14 @@ import subprocess
 import click
 
 from lib.op import (
-    get_secure_note_content_by_id,
     get_item,
     set_item,
     clear_items,
     list_items,
     infer_selected_vault,
-    NoteNotFound,
     infer_selected_vault_name,
     has_item,
     delete_item,
-    get_vault_list,
     get_vault_id,
     VaultNotFound,
 )
@@ -232,6 +229,78 @@ def get_user_id_rsa(ctx, username):
     item_key = f"users.{username}.id_rsa"
     sys.stdout.write(get_item(vault_id, item_key))
 
+def process_authorized_keys_text(contents):
+    contents=contents.replace("\r\n","\n")
+    contents=contents.trim("")
+    contents=re.sub(r"\n+","\n",contents)
+    return contents
+
+
+@handler.command()
+@click.pass_context
+@click.argument("username", type=str)
+@click.option("--file", type=str, required=False, default=None )
+def set_user_authorized_keys(ctx, username, file):
+    vault_id = ctx.obj["vault_id"]
+    vault_name = ctx.obj["vault_name"]
+    if not has_user(vault_id, username):
+        die(f"User '{username}' does not exist in vault '{vault_name}'")
+    item_key = f"users.{username}.authorized_keys"
+    contents = None
+    if file is not None:
+        contents = file_get_text_contents(file)
+    if contents is None:
+        stdin_contents =sys.stdin.read()
+        if stdin_contents:
+            contents = stdin_contents
+    if contents is None:
+        die("No input. Either pipe into stdin or specify a file with `--file=<FILE>`")
+    contents = process_authorized_keys_text(contents)
+    set_item(vault_id,item_key,contents)
+
+@handler.command()
+@click.pass_context
+@click.argument("username", type=str)
+@click.option("--file", type=str, required=False, default=None )
+# we use singular "key" here but technically the input contents may contin more than one key
+# although there is not particular need for it
+def add_user_authorized_key(ctx, username, file):
+    vault_id = ctx.obj["vault_id"]
+    vault_name = ctx.obj["vault_name"]
+    if not has_user(vault_id, username):
+        die(f"User '{username}' does not exist in vault '{vault_name}'")
+    item_key = f"users.{username}.authorized_keys"
+    contents = None
+    if file is not None:
+        contents = file_get_text_contents(file)
+    if contents is None:
+        stdin_contents =sys.stdin.read()
+        if stdin_contents:
+            contents = stdin_contents
+    if contents is None:
+        die("No input. Either pipe into stdin or specify a file with `--file=<FILE>`")
+    existing_contents=get_item(vault_id,get_item)
+    if existing_contents is None:
+        existing_contents=""
+    existing_contents = process_authorized_keys_text(contents)
+    new_contents = process_authorized_keys_text(contents)
+    set_item(vault_id,item_key,"\n".join([
+        existing_contents,
+        new_contents
+    ]))
+
+@handler.command()
+@click.pass_context
+@click.argument("username", type=str)
+def get_user_authorized_keys(ctx, username):
+    vault_id = ctx.obj["vault_id"]
+    vault_name = ctx.obj["vault_name"]
+    if not has_user(vault_id, username):
+        die(f"User '{username}' does not exist in vault '{vault_name}'")
+    item_key = f"users.{username}.authorized_keys"
+    contents = get_item(vault_id,item_key)
+    sys.stdout.write(vault_id,item_key,contents)
+
 
 @click.command()
 @click.argument("vaults", nargs=-1, type=str)
@@ -307,6 +376,7 @@ Host "{entry['Host']}"
   User "{entry['User']}"
   IdentityFile "{entry['IdentityFile']}"
   Port "{entry['Port']}"
+  ForwardX11 yes
 """.strip()
 
         text = "\n\n".join([format_entry(entry) for entry in entries])
