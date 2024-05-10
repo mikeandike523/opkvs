@@ -15,6 +15,5 @@ deactivate
 sudo chmod +x ./__pipenv
 sudo chmod +x ./__python
 sudo chmod +x ./opkvs
-sudo chmod +x ./update
 
 ./__pipenv install
