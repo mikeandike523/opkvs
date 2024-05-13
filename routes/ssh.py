@@ -301,12 +301,42 @@ def get_user_authorized_keys(ctx, username):
 
 
 @click.command()
+# We allow user to specify,
+# since in some cases user may run this from wsl,
+# and want to first manage wsl ssh config and then windows ssh config
+@click.option(
+    "--target-os",
+    type=click.Choice(["windows", "posix"]),
+    required=False,
+    default="posix",
+)
+@click.option(
+    "--windows-user-home",
+    type=str,
+    required=False,
+    default=None,
+)
 @click.argument("vaults", nargs=-1, type=str)
-def ssh_compile(vaults):
-
+def ssh_compile(target_os, windows_user_home, vaults):
+    if target_os is None:
+        target_os = "windows" if os.name == "nt" else "posix"
+    if target_os == "windows" and os.name != "nt" and windows_user_home is None:
+        die(
+            "`--windows-user-home` must be specified targeting windows from wsl or other posix compliant guest system"
+        )
     try:
 
         home_dir = os.path.expanduser("~")
+
+        if os.name != "nt" and target_os == "windows":
+            windows_user_home = windows_user_home.replace("\\", "/")
+            windows_user_home = windows_user_home.strip("/")
+            windows_user_home = re.sub(r"/+", "/", windows_user_home)
+            components = windows_user_home.split("/")
+            components[0] = components[0][:-1].lower()
+            windows_user_home = "/".join(components)
+            windows_user_home = f"/mnt/" + windows_user_home
+            home_dir = windows_user_home
 
         if not os.path.exists(os.path.join(home_dir, ".ssh")):
             os.mkdir(os.path.join(home_dir, ".ssh"))
@@ -322,7 +352,6 @@ def ssh_compile(vaults):
 
             vault_id = get_vault_id(vault)
 
-            vault_alias = get_item(vault_id, "alias")
             vault_host = get_item(vault_id, "host")
             vault_port = int(get_item(vault_id, "port"))
 
@@ -343,7 +372,7 @@ def ssh_compile(vaults):
                 file_put_text_contents(
                     os.path.join(vault_user_identities_path, user, "id_rsa"), id_rsa
                 )
-                if os.name != "nt":
+                if target_os == "posix":
 
                     subprocess.check_output(
                         [
@@ -354,7 +383,17 @@ def ssh_compile(vaults):
                         ]
                     )
 
-                full_alias = f"{vault_alias} | {user}{'' if vault_port == 22 else ' | ' + str(vault_port)}"
+                else:
+                    win_id_rsa_filepath = os.path.join(
+                        vault_user_identities_path, user, "id_rsa"
+                    ).replace("/", "\\")[len("/mnt/") :]
+                    components = win_id_rsa_filepath.split("\\")
+                    components[0] = components[0].upper() + ":"
+                    win_id_rsa_filepath = "\\".join(components)
+                    sys.stderr.write(
+                        f"Please manually set the permissions of the identify file: {win_id_rsa_filepath}\n"
+                    )
+
                 entry = {}
 
                 # entry["Host"] = full_alias
