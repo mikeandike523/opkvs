@@ -229,17 +229,18 @@ def get_user_id_rsa(ctx, username):
     item_key = f"users.{username}.id_rsa"
     sys.stdout.write(get_item(vault_id, item_key))
 
+
 def process_authorized_keys_text(contents):
-    contents=contents.replace("\r\n","\n")
-    contents=contents.strip("")
-    contents=re.sub(r"\n+","\n",contents)
+    contents = contents.replace("\r\n", "\n")
+    contents = contents.strip("")
+    contents = re.sub(r"\n+", "\n", contents)
     return contents
 
 
 @handler.command()
 @click.pass_context
 @click.argument("username", type=str)
-@click.option("--file", type=str, required=False, default=None )
+@click.option("--file", type=str, required=False, default=None)
 def set_user_authorized_keys(ctx, username, file):
     vault_id = ctx.obj["vault_id"]
     vault_name = ctx.obj["vault_name"]
@@ -250,18 +251,19 @@ def set_user_authorized_keys(ctx, username, file):
     if file is not None:
         contents = file_get_text_contents(file)
     if contents is None:
-        stdin_contents =sys.stdin.read()
+        stdin_contents = sys.stdin.read()
         if stdin_contents:
             contents = stdin_contents
     if contents is None:
         die("No input. Either pipe into stdin or specify a file with `--file=<FILE>`")
     contents = process_authorized_keys_text(contents)
-    set_item(vault_id,item_key,contents)
+    set_item(vault_id, item_key, contents)
+
 
 @handler.command()
 @click.pass_context
 @click.argument("username", type=str)
-@click.option("--file", type=str, required=False, default=None )
+@click.option("--file", type=str, required=False, default=None)
 def add_user_authorized_keys(ctx, username, file):
     vault_id = ctx.obj["vault_id"]
     vault_name = ctx.obj["vault_name"]
@@ -272,20 +274,18 @@ def add_user_authorized_keys(ctx, username, file):
     if file is not None:
         contents = file_get_text_contents(file)
     if contents is None:
-        stdin_contents =sys.stdin.read()
+        stdin_contents = sys.stdin.read()
         if stdin_contents:
             contents = stdin_contents
     if contents is None:
         die("No input. Either pipe into stdin or specify a file with `--file=<FILE>`")
-    existing_contents=get_item(vault_id,get_item)
+    existing_contents = get_item(vault_id, get_item)
     if existing_contents is None:
-        existing_contents=""
+        existing_contents = ""
     existing_contents = process_authorized_keys_text(contents)
     new_contents = process_authorized_keys_text(contents)
-    set_item(vault_id,item_key,"\n".join([
-        existing_contents,
-        new_contents
-    ]))
+    set_item(vault_id, item_key, "\n".join([existing_contents, new_contents]))
+
 
 @handler.command()
 @click.pass_context
@@ -296,8 +296,8 @@ def get_user_authorized_keys(ctx, username):
     if not has_user(vault_id, username):
         die(f"User '{username}' does not exist in vault '{vault_name}'")
     item_key = f"users.{username}.authorized_keys"
-    contents = get_item(vault_id,item_key)
-    sys.stdout.write(vault_id,item_key,contents)
+    contents = get_item(vault_id, item_key)
+    sys.stdout.write(contents)
 
 
 @click.command()
