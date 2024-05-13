@@ -372,7 +372,14 @@ def ssh_compile(target_os, windows_user_home, vaults):
                 file_put_text_contents(
                     os.path.join(vault_user_identities_path, user, "id_rsa"), id_rsa
                 )
+
+                entry = {}
+
                 if target_os == "posix":
+
+                    entry["IdentityFile"] = os.path.join(
+                        vault_user_identities_path, user, "id_rsa"
+                    )
 
                     subprocess.check_output(
                         [
@@ -390,19 +397,17 @@ def ssh_compile(target_os, windows_user_home, vaults):
                     components = win_id_rsa_filepath.split("\\")
                     components[0] = components[0].upper() + ":"
                     win_id_rsa_filepath = "\\".join(components)
+
+                    entry["IdentityFile"] = win_id_rsa_filepath
+
                     sys.stderr.write(
                         f"Please manually set the permissions of the identify file: {win_id_rsa_filepath}\n"
                     )
 
-                entry = {}
-
-                # entry["Host"] = full_alias
                 entry["Host"] = vault
                 entry["HostName"] = vault_host
                 entry["User"] = user
-                entry["IdentityFile"] = os.path.join(
-                    vault_user_identities_path, user, "id_rsa"
-                )
+
                 entry["Port"] = vault_port
 
                 entries.append(entry)
