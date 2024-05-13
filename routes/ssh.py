@@ -354,10 +354,11 @@ def ssh_compile(vaults):
                         ]
                     )
 
-                full_alias = f"{user}@{vault_alias}{'' if vault_port == 22 else ':' + str(vault_port)}"
+                full_alias = f"{vault_alias} | {user}{'' if vault_port == 22 else ' | ' + str(vault_port)}"
                 entry = {}
 
-                entry["Host"] = full_alias
+                # entry["Host"] = full_alias
+                entry["Host"] = vault
                 entry["HostName"] = vault_host
                 entry["User"] = user
                 entry["IdentityFile"] = os.path.join(
