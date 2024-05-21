@@ -8,11 +8,10 @@ python3 -m venv pyenv
 
 source pyenv/bin/activate
 
-python3 -m pip install pipenv
+python3 -m pip install -r "$dn/requirements.txt"
 
 deactivate
 
-sudo chmod +x ./__pipenv
 sudo chmod +x ./__python
 sudo chmod +x ./opkvs
 

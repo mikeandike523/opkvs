@@ -2,4 +2,8 @@
 
 dn="$(dirname "$(realpath "$0")")"
 
-"$dn/__pipenv" run python "$@"
+source "$dn/pyenv/bin/activate"
+
+python3 "$@"
+
+deactivate

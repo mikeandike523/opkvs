@@ -1,0 +1,5 @@
+numpy
+click
+termcolor
+pandas
+black
