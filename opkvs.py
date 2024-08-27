@@ -83,7 +83,7 @@ def set_item(key, value, file, silent=False, vault=None):
     file_value = None
 
     if value is None and file is None:
-        stdin_value = sys.stdin.read().decode("utf-8")
+        stdin_value = sys.stdin.read()
         if len(stdin_value) == 0:
             stdin_value = value
     if file:
