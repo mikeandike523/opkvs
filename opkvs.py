@@ -77,25 +77,21 @@ def upsert_content_procedure(key, value, silent=False, vault=None):
 @click.option("--file", type=click.Path(exists=True), required=False, default=None)
 @click.option("-s", "--silent", is_flag=True, default=False)
 @click.option("--vault", type=str, default=None)
-def set_item(key, value, file, silent=False, vault=None):
+def set_item(key, value=None, file=None, silent=False, vault=None):
 
-    stdin_value = None
-    file_value = None
+    final_value = None
 
-    if value is None and file is None:
-        stdin_value = sys.stdin.read()
-        if len(stdin_value) == 0:
-            stdin_value = value
+    stdin_value = sys.stdin.read().strip()
+    if stdin_value:
+        final_value = stdin_value
+
     if file:
         with open(file, "r", encoding="utf-8") as f:
-            file_value = f.read()
-    contents = (
-        value
-        if value is not None
-        else (file_value if file_value is not None else stdin_value)
-    )
+            file_value = f.read().strip()
+            if file_value:
+                final_value = file_value
 
-    upsert_content_procedure(key, contents, silent, vault)
+    upsert_content_procedure(key, final_value, silent, vault)
 
 
 @cli.command()

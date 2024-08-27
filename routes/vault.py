@@ -15,9 +15,9 @@ def handler():
 
 def get_vault_list():
     as_list = json.loads(
-        subprocess.check_output(["op", "vault", "list", "--format=json"]).decode(
-            "utf-8"
-        )
+        subprocess.check_output(
+            ["op", "vault", "list", "--format=json"], stdin=subprocess.DEVNULL
+        ).decode("utf-8")
     )
     return as_list
 

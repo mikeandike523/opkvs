@@ -70,7 +70,7 @@ def get_vault_id(name):
 
 
 def run_op_command(args):
-    p = subprocess.Popen(["op"] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(["op"] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.DEVNULL)
     stdout, stderr = p.communicate()
     rc = p.returncode
     stdout = stdout.decode("utf-8") if stdout is not None else ""
@@ -78,7 +78,7 @@ def run_op_command(args):
     if rc != 0:
         die(
             f"""
-Could not run op command:
+Could not run op command: {" ".join(["op"]+args)}
 stdout:
 {stdout}
 stderr:

@@ -1,3 +1,5 @@
 pyenv
 
 */__pycache__
+
+.env
