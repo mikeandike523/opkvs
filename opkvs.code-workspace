@@ -5,6 +5,8 @@
 		}
 	],
 	"settings": {
+		"files.eol": "\n",
+		"terminal.integrated.defaultProfile.windows": "PowerShell",
 		"[python]":{
 			"editor.formatOnSave": true,
 			"editor.formatOnPaste": true,
