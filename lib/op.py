@@ -179,8 +179,8 @@ def get_secure_note_content_by_id(vault_id, note_id):
 
     # Command to retrieve only the notes content from the secure note
     output = run_op_command(
-        ["item", "get", note_id, "--vault", vault_id, "--fields", "value"]
-    ).strip()[1:-1]
+        ["item", "get", note_id, "--vault", vault_id, "--fields", "value","--reveal"]
+    ).strip().strip("\"'")
 
     # Process output to get the content of the notes directly
     note_content = b64decode(output.encode("utf-8")).decode("utf-8")
