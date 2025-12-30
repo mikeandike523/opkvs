@@ -1,9 +1,40 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-dn="$(dirname "$(realpath "$0")")"
+set -euo pipefail
 
-source "$dn/pyenv/bin/activate"
+# Require realpath (user requested systems have it available)
+if ! command -v realpath >/dev/null 2>&1; then
+	printf '%s\n' "Error: realpath required but not found" >&2
+	exit 1
+fi
 
-python3 "$@"
+dn="$(realpath "${BASH_SOURCE[0]}")"
+dn="$(dirname "$dn")"
 
-deactivate
+# Locate activation script; fail if neither exists.
+if [ -f "$dn/pyenv/bin/activate" ]; then
+	act="$dn/pyenv/bin/activate"
+elif [ -f "$dn/pyenv/Scripts/activate" ]; then
+	act="$dn/pyenv/Scripts/activate"
+else
+	printf '%s\n' "Error: no virtualenv activate script found in $dn/pyenv/bin or $dn/pyenv/Scripts" >&2
+	exit 2
+fi
+
+# shellcheck disable=SC1090
+source "$act"
+
+# After successful activation we assume a usable `python` is available.
+if ! command -v python >/dev/null 2>&1; then
+	printf '%s\n' "Error: activated environment does not expose 'python' in PATH" >&2
+	exit 3
+fi
+
+cleanup() {
+	if command -v deactivate >/dev/null 2>&1; then
+		deactivate
+	fi
+}
+trap cleanup EXIT
+
+python "$@"
