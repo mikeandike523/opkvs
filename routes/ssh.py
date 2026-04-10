@@ -230,6 +230,21 @@ def get_user_id_rsa(ctx, username):
     sys.stdout.write(get_item(vault_id, item_key))
 
 
+def _is_windows_host():
+    """
+    Returns True when the process is running on a Windows host, regardless of
+    whether the shell is cmd/PowerShell, Git Bash (MSYS2), or Cygwin.
+    Git Bash sets os.name to 'posix', so we also check Windows-specific
+    environment variables that are always present on Windows but absent in WSL.
+    """
+    if os.name == "nt":
+        return True
+    # WINDIR and OS=Windows_NT are set by Windows itself and inherited by Git Bash
+    if os.environ.get("WINDIR") or os.environ.get("OS") == "Windows_NT":
+        return True
+    return False
+
+
 def process_authorized_keys_text(contents):
     contents = contents.replace("\r\n", "\n")
     contents = contents.strip("")
@@ -308,7 +323,7 @@ def get_user_authorized_keys(ctx, username):
     "--target-os",
     type=click.Choice(["windows", "posix"]),
     required=False,
-    default="posix",
+    default=None,
 )
 @click.option(
     "--windows-user-home",
@@ -319,8 +334,8 @@ def get_user_authorized_keys(ctx, username):
 @click.argument("vaults", nargs=-1, type=str)
 def ssh_compile(target_os, windows_user_home, vaults):
     if target_os is None:
-        target_os = "windows" if os.name == "nt" else "posix"
-    if target_os == "windows" and os.name != "nt" and windows_user_home is None:
+        target_os = "windows" if _is_windows_host() else "posix"
+    if target_os == "windows" and not _is_windows_host() and windows_user_home is None:
         die(
             "`--windows-user-home` must be specified targeting windows from wsl or other posix compliant guest system"
         )
@@ -328,7 +343,7 @@ def ssh_compile(target_os, windows_user_home, vaults):
 
         home_dir = os.path.expanduser("~")
 
-        if os.name != "nt" and target_os == "windows":
+        if not _is_windows_host() and target_os == "windows":
             windows_user_home = windows_user_home.replace("\\", "/")
             windows_user_home = windows_user_home.strip("/")
             windows_user_home = re.sub(r"/+", "/", windows_user_home)
@@ -391,18 +406,48 @@ def ssh_compile(target_os, windows_user_home, vaults):
                     )
 
                 else:
-                    win_id_rsa_filepath = os.path.join(
-                        vault_user_identities_path, user, "id_rsa"
-                    ).replace("/", "\\")[len("/mnt/") :]
-                    components = win_id_rsa_filepath.split("\\")
-                    components[0] = components[0].upper() + ":"
-                    win_id_rsa_filepath = "\\".join(components)
+                    if _is_windows_host():
+                        # Git Bash or native Windows — path is already a Windows path
+                        win_id_rsa_filepath = os.path.join(
+                            vault_user_identities_path, user, "id_rsa"
+                        ).replace("/", "\\")
+                    else:
+                        # WSL targeting Windows — convert /mnt/<drive>/... to <DRIVE>:\...
+                        win_id_rsa_filepath = os.path.join(
+                            vault_user_identities_path, user, "id_rsa"
+                        ).replace("/", "\\")[len("/mnt/"):]
+                        components = win_id_rsa_filepath.split("\\")
+                        components[0] = components[0].upper() + ":"
+                        win_id_rsa_filepath = "\\".join(components)
 
                     entry["IdentityFile"] = win_id_rsa_filepath
 
-                    sys.stderr.write(
-                        f"Please manually set the permissions of the identify file: {win_id_rsa_filepath}\n"
+                    # Attempt to restrict permissions using icacls (built into all Windows versions).
+                    # From WSL we call icacls.exe; from Git Bash or native Windows we call icacls.
+                    icacls = "icacls" if _is_windows_host() else "icacls.exe"
+                    win_username = (
+                        os.environ.get("USERNAME")
+                        or os.environ.get("LOGNAME")
+                        or os.environ.get("USER")
+                        or ""
                     )
+                    try:
+                        subprocess.check_output(
+                            [
+                                icacls,
+                                win_id_rsa_filepath,
+                                "/inheritance:r",
+                                "/grant:r",
+                                f"{win_username}:(R)",
+                            ],
+                            stderr=subprocess.STDOUT,
+                        )
+                    except Exception:
+                        sys.stderr.write(
+                            f"Warning: Could not automatically set permissions on '{win_id_rsa_filepath}'.\n"
+                            "Please restrict access manually: right-click the file > Properties > Security,\n"
+                            "and ensure only your user account has access.\n"
+                        )
 
                 entry["Host"] = vault
                 entry["HostName"] = vault_host
