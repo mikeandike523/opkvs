@@ -23,7 +23,7 @@ from lib.op import (
     VaultNotFound,
 )
 from lib.cli import die
-from lib.fs import file_get_text_contents
+from lib.fs import file_get_text_contents, file_put_text_contents
 from lib.ssh_config import parse_ssh_config, apply_entries, serialize_config
 
 
