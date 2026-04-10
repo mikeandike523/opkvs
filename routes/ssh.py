@@ -456,7 +456,7 @@ def ssh_compile(target_os, windows_user_home, write, vaults):
                             "and ensure only your user account has access.\n"
                         )
 
-                entry["Host"] = f"{user}@{vault}"
+                entry["Host"] = f"{vault} -- {user}"
                 entry["HostName"] = vault_host
                 entry["User"] = user
 
