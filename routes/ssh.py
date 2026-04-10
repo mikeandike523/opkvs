@@ -449,7 +449,7 @@ def ssh_compile(target_os, windows_user_home, vaults):
                             "and ensure only your user account has access.\n"
                         )
 
-                entry["Host"] = vault
+                entry["Host"] = f"{user}@{vault}"
                 entry["HostName"] = vault_host
                 entry["User"] = user
 
@@ -457,13 +457,28 @@ def ssh_compile(target_os, windows_user_home, vaults):
 
                 entries.append(entry)
 
+        def ssh_quote(value, is_host_pattern=False):
+            """
+            Sanitize a value for safe embedding in a quoted ssh_config field.
+
+            SSH config has no escape sequence for embedded double-quotes, so we
+            strip them outright.  For Host pattern fields we also strip the glob
+            characters (* ? !) that OpenSSH treats as special.
+            """
+            value = str(value).replace('"', '')
+            if is_host_pattern:
+                value = value.replace('*', '').replace('?', '')
+                # A leading '!' means negation in a Host pattern — strip it
+                value = value.lstrip('!')
+            return value
+
         def format_entry(entry):
             return f"""
-Host "{entry['Host']}"
-  HostName "{entry['HostName']}"
-  User "{entry['User']}"
-  IdentityFile "{entry['IdentityFile']}"
-  Port "{entry['Port']}"
+Host "{ssh_quote(entry['Host'], is_host_pattern=True)}"
+  HostName "{ssh_quote(entry['HostName'])}"
+  User "{ssh_quote(entry['User'])}"
+  IdentityFile "{ssh_quote(entry['IdentityFile'])}"
+  Port "{ssh_quote(entry['Port'])}"
   ForwardX11 yes
 """.strip()
 
