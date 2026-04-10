@@ -23,7 +23,8 @@ from lib.op import (
     VaultNotFound,
 )
 from lib.cli import die
-from lib.fs import file_get_text_contents, file_put_text_contents
+from lib.fs import file_get_text_contents
+from lib.ssh_config import parse_ssh_config, apply_entries, serialize_config
 
 
 def check_item_name(item_name):
@@ -331,8 +332,14 @@ def get_user_authorized_keys(ctx, username):
     required=False,
     default=None,
 )
+@click.option(
+    "--write", "-w",
+    is_flag=True,
+    default=False,
+    help="Write entries directly into ~/.ssh/config instead of printing to stdout.",
+)
 @click.argument("vaults", nargs=-1, type=str)
-def ssh_compile(target_os, windows_user_home, vaults):
+def ssh_compile(target_os, windows_user_home, write, vaults):
     if target_os is None:
         target_os = "windows" if _is_windows_host() else "posix"
     if target_os == "windows" and not _is_windows_host() and windows_user_home is None:
@@ -482,9 +489,36 @@ Host "{ssh_quote(entry['Host'], is_host_pattern=True)}"
   ForwardX11 yes
 """.strip()
 
-        text = "\n\n".join([format_entry(entry) for entry in entries])
+        formatted_blocks = [format_entry(entry) for entry in entries]
+        host_aliases = [entry["Host"] for entry in entries]
 
-        print(text)
+        if not write:
+            print("\n\n".join(formatted_blocks))
+        else:
+            ssh_config_path = os.path.join(home_dir, ".ssh", "config")
+
+            try:
+                existing_text = file_get_text_contents(ssh_config_path)
+            except FileNotFoundError:
+                existing_text = ""
+            except PermissionError as exc:
+                die(f"Cannot read {ssh_config_path}: {exc}")
+
+            parsed = parse_ssh_config(existing_text)
+            updated, actions = apply_entries(parsed, formatted_blocks, host_aliases)
+            output_text = serialize_config(updated)
+
+            try:
+                # Write via a temp file so the config is never left half-written
+                tmp_path = ssh_config_path + ".opkvs_tmp"
+                with open(tmp_path, "w", newline="", encoding="utf-8") as f:
+                    f.write(output_text)
+                os.replace(tmp_path, ssh_config_path)
+            except PermissionError as exc:
+                die(f"Cannot write {ssh_config_path}: {exc}")
+
+            for alias, action in actions:
+                sys.stderr.write(f"  {action}: {alias}\n")
 
     except VaultNotFound as e:
         die(str(e))
